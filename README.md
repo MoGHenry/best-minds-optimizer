@@ -6,7 +6,7 @@ An agent skill that automatically rewrites your prompts through the lens of the 
 
 The same question produces dramatically different answers depending on how it's framed. This skill exploits that by identifying the world's leading expert for your topic and rewriting your prompt through their thinking — automatically, before the LLM responds.
 
-**You ask a vague question. You get an expert-framed answer.**
+**You ask a question. It clarifies if needed (via quick multiple-choice), picks the best expert, rewrites your prompt, and delivers a sharp, concise answer with a clear next step.**
 
 ## Test Results
 
@@ -82,12 +82,39 @@ The skill knows when to stay out of the way. Simple commands, file operations, a
 ## How It Works
 
 1. **You send a prompt** — any substantive question, decision, or analysis request
-2. **The skill identifies the best expert** — a specific named individual whose frameworks fit your problem
-3. **It rewrites your prompt** through that expert's mental models, vocabulary, and reasoning structure
-4. **It emits structured JSON** with the expert profile, optimized prompt, and display metadata
-5. **It executes the optimized prompt** and delivers the answer
+2. **If ambiguous, it asks clarifying questions first** — as multiple-choice options (2–5 choices each), always with an "Other — tell me more" escape hatch. Fast to answer, no typing required.
+3. **The skill identifies the best expert** — a specific named individual whose frameworks fit your problem
+4. **It rewrites your prompt** through that expert's mental models, vocabulary, and reasoning structure
+5. **It emits structured JSON** with the expert profile, optimized prompt, and display metadata
+6. **It executes the optimized prompt** — concise answer (3–5 key points), always ending with a concrete next step
 
 For trivial tasks (file reads, git commands, simple code edits), the skill emits `status: "skipped"` and proceeds directly.
+
+## Clarification UX
+
+When a prompt is ambiguous, the skill asks multiple-choice questions instead of open-ended ones — keeping the interaction fast:
+
+```
+**What's the core user action?**
+a) Marketplace / transactions
+b) Content creation or consumption
+c) Real-time communication
+d) Other — tell me more
+
+**Who's your target user?**
+a) B2B — mostly on desktop at work
+b) B2C — mostly on mobile, on the go
+c) Both / not sure yet
+d) Other — tell me more
+
+**Do you have existing traction?**
+a) Yes — existing audience or paying customers
+b) No — starting from zero
+c) Some early interest but no revenue yet
+d) Other — tell me more
+```
+
+You reply with letters (e.g., `a, b, c`) and the skill optimizes from there. If none of the choices fit, type your own context.
 
 ## Output Format
 
