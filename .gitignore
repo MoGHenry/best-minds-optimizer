@@ -35,3 +35,4 @@ evals/
 my-video-tktk/
 /claude-code-ntfy
 *.stackdump
+skills-lock.json
