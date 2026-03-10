@@ -1,5 +1,7 @@
 # Best Minds — Prompt Optimizer
 
+[README - 中文版](https://github.com/MoGHenry/best-minds-optimizer/blob/main/README-CN.md)
+
 Every question you ask an LLM gets a generic answer. The same question, rewritten through Charlie Munger's mental models or Blair Enns' pricing frameworks, gets a fundamentally different — and better — one.
 
 This agent skill does the rewriting automatically. You ask a question, it identifies the world's best expert for your specific problem, rewrites your prompt through their frameworks, and delivers the answer in plain English with a concrete next step.
@@ -50,48 +52,21 @@ Tightens wording, fixes grammar, improves parallel structure — preserves your 
 
 Every prompt hits a 4-lane triage, then routes to the appropriate pipeline:
 
-```
-                    Your question
-                           │
-                           ▼
-┌───────────────────────────────────────────────────────┐
-│                        TRIAGE                         │
-│               Which lane fits this prompt?            │
-├─────────┬─────────┬──────────┬────────────────────────┤
-│  Skip   │ Polish  │ Clarify  │       Optimize         │
-│         │         │          │           │            │
-│ Proceed │ Quick   │   Ask    │           ▼            │
-│ as-is   │ wording │   MCQs   │┌─────────────────────┐ │
-│         │ pass    │   then   ││ LOGIC MAPPING       │ │
-│         │         │    ▼     ││ Classify problem:   │ │
-│         │         │ Optimize ││Bottleneck, Resource │ │
-│         │         │          ││ Direction, Execution│ │
-│         │         │          ││ Tradeoff, Diagnosis │ │
-│         │         │          │└──────────┬──────────┘ │
-│         │         │          │           │            │
-│         │         │          │           ▼            │
-│         │         │          │┌─────────────────────┐ │
-│         │         │          ││ EXPERT SELECTION    │ │
-│         │         │          ││ Named individual,   │ │
-│         │         │          ││ mental models, KPIs │ │
-│         │         │          │└──────────┬──────────┘ │
-│         │         │          │           │            │
-│         │         │          │           ▼            │
-│         │         │          │┌──────────────────────┐│
-│         │         │          ││ PROMPT REWRITE       ││
-│         │         │          ││ Expert's frameworks, ││
-│         │         │          ││ vocabulary, blind    ││
-│         │         │          ││ spots                ││
-│         │         │          │└──────────┬───────────┘│
-│         │         │          │           │            │
-│         │         │          │           ▼            │
-│         │         │          │┌──────────────────────┐│
-│         │         │          ││ PLAIN-ENGLISH ANSWER ││
-│         │         │          ││ 3-5 points, concrete ││
-│         │         │          ││ "Next step" at end   ││
-│         │         │          │└──────────────────────┘│
-└─────────┴─────────┴──────────┴────────────────────────┘
-```
+| Lane         | When it triggers          | What happens                                                                                                  |
+| :----------- | :------------------------ | :------------------------------------------------------------------------------------------------------------ |
+| **Skip**     | Mechanical task           | Proceed as-is — no rewrite, no friction                                                                       |
+| **Polish**   | User-authored text        | Quick wording pass — tighten clarity, fix grammar, preserve voice                                             |
+| **Clarify**  | Ambiguous intent          | Ask multiple-choice questions to gather context, then route to **Optimize**                                   |
+| **Optimize** | Substantive & clear       | Full pipeline: Logic Mapping → Expert Selection → Prompt Rewrite → Plain-English Answer with concrete next step |
+
+The **Optimize** pipeline runs 4 steps:
+
+| Step | What it does                                                                        |
+| :--- | :---------------------------------------------------------------------------------- |
+| 1    | **Logic Mapping** — classify problem shape: Bottleneck · Resource · Direction · Execution · Tradeoff · Diagnosis |
+| 2    | **Expert Selection** — pick a named individual, extract mental models and KPIs      |
+| 3    | **Prompt Rewrite** — apply expert's frameworks, vocabulary, and blind spot coverage  |
+| 4    | **Plain-English Answer** — 3–5 key points + concrete next step                      |
 
 **Follow-ups skip the pipeline.** Asking "tell me more about point 3" goes deeper in the same expert's framework without re-running everything.
 
