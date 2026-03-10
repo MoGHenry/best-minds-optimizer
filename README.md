@@ -30,6 +30,16 @@ Includes the attrition math, a client segmentation framework (who to raise first
 
 Surfaces a third option most founders miss (90-day eval with executive coaching), warns against the worst outcome ("promoting her into an ambiguous VP title while simultaneously recruiting externally"), and gives the next step: *"Have a direct conversation with her this week — tell her what the VP role requires at Series A scale and ask how she'd approach it."*
 
+### Polishing Your Own Writing
+
+**You type:** *"For step 2, MUST breakdown the optimized prompt and then review all available Agent Skills. Check if any of the Agent Skills is helpful for completing the task."*
+
+**With this skill** — Recognizes this is user-authored prose, not a question. Applies a quick polish pass without the full expert pipeline:
+
+> *"After step 1, break down the optimized prompt and review all available Agent Skills. For each skill that matches the task, emit the skill name and a one-sentence reason it was triggered."*
+
+Tightens wording, fixes grammar, improves parallel structure — preserves your voice and intent.
+
 ### Trivial Tasks
 
 **You type:** *"Read the package.json file in this directory"*
@@ -38,56 +48,72 @@ Surfaces a third option most founders miss (90-day eval with executive coaching)
 
 ## How It Works
 
-The skill runs a 5-step pipeline on every substantive prompt:
+Every prompt hits a 4-lane triage, then routes to the appropriate pipeline:
 
 ```
 Your question
     │
     ▼
 ┌─────────────────────────────────┐
-│  1. TRIAGE                      │
-│  Skip (trivial) / Clarify       │
-│  (ambiguous) / Optimize (clear) │
-└──────────────┬──────────────────┘
-               │
-               ▼
-┌─────────────────────────────────┐
-│  2. LOGIC MAPPING               │
-│  Classify the problem shape:    │
-│  Bottleneck, Resource,          │
-│  Direction, Execution,          │
-│  Tradeoff, or Diagnosis         │
-└──────────────┬──────────────────┘
-               │
-               ▼
-┌─────────────────────────────────┐
-│  3. EXPERT SELECTION            │
-│  Pick a specific named person   │
-│  (never "a marketing expert")   │
-│  Extract their mental models    │
-│  and success metrics            │
-└──────────────┬──────────────────┘
-               │
-               ▼
-┌─────────────────────────────────┐
-│  4. PROMPT REWRITE              │
-│  High-density technical prompt  │
-│  using expert's frameworks,     │
-│  vocabulary, and blind spots    │
-└──────────────┬──────────────────┘
-               │
-               ▼
-┌─────────────────────────────────┐
-│  5. PLAIN-ENGLISH ANSWER        │
-│  3-5 key points, scannable,     │
-│  jargon-free, with a concrete   │
-│  "Next step" at the end         │
-└─────────────────────────────────┘
+│  TRIAGE                         │
+│  Which lane fits this prompt?   │
+├─────────┬─────────┬──────┬──────┤
+│  Skip   │ Polish  │Clarify│Optimize
+│         │         │      │      │
+│ Proceed │ Quick   │ Ask  │  ▼   │
+│ as-is   │ wording │ MCQs │┌─────┴───────────────┐
+│         │ pass    │ then ││ LOGIC MAPPING       │
+│         │         │  ▼   ││ Classify problem:   │
+│         │         │Optimize│ Bottleneck, Resource│
+│         │         │      ││ Direction, Execution│
+│         │         │      ││ Tradeoff, Diagnosis │
+│         │         │      │└─────┬───────────────┘
+│         │         │      │      │
+│         │         │      │      ▼
+│         │         │      │┌─────────────────────┐
+│         │         │      ││ EXPERT SELECTION     │
+│         │         │      ││ Named individual,    │
+│         │         │      ││ mental models, KPIs  │
+│         │         │      │└─────┬───────────────┘
+│         │         │      │      │
+│         │         │      │      ▼
+│         │         │      │┌─────────────────────┐
+│         │         │      ││ PROMPT REWRITE       │
+│         │         │      ││ Expert's frameworks, │
+│         │         │      ││ vocabulary, blind    │
+│         │         │      ││ spots                │
+│         │         │      │└─────┬───────────────┘
+│         │         │      │      │
+│         │         │      │      ▼
+│         │         │      │┌─────────────────────┐
+│         │         │      ││ PLAIN-ENGLISH ANSWER │
+│         │         │      ││ 3-5 points, concrete │
+│         │         │      ││ "Next step" at end   │
+│         │         │      │└─────────────────────┘
+└─────────┴─────────┴──────┴──────┘
 ```
 
 **Follow-ups skip the pipeline.** Asking "tell me more about point 3" goes deeper in the same expert's framework without re-running everything.
 
 **Ambiguous prompts get clarification first** — via multiple-choice questions so you can reply with a letter instead of typing paragraphs.
+
+## Architecture
+
+The skill uses progressive disclosure to keep context lean. Only the triage logic loads on every invocation — detailed instructions load on demand:
+
+```
+best-minds-optimizer/
+├── SKILL.md              ← Entry point: triage + routing (64 lines)
+└── references/
+    ├── optimize.md       ← Full pipeline: Logic Mapping → Expert
+    │                       Selection → Rewrite → Output (225 lines)
+    ├── clarify.md        ← Clarification flow, then routes to
+    │                       optimize.md (44 lines)
+    └── polish.md         ← Quick wording pass for user-authored
+                            text (35 lines)
+```
+
+A **Skip** loads 64 lines. A **Polish** loads 99. Only a full **Optimize** loads the heavy reference.
 
 ## What Makes This Different
 
@@ -122,23 +148,6 @@ Optimized prompt:
 
 Next step: [One concrete action you can take right now]
 ```
-
-## Quality Benchmarks
-
-We tested the current skill against its previous version across 3 eval cases:
-
-| Eval | Current Skill <br>  (commit: d667f71) | Previous Version <br> (commit: ab70006) |
-|------|:---:|:---:|
-| Business pricing strategy | 9/10 | 8/10 |
-| Trivial task (should skip) | 9/10 | 7/10 |
-| Org scaling / hiring decision | 9.5/10 | 9/10 |
-| **Average** | **9.2** | **8.0** |
-
-Key quality differences:
-- Current skill includes **diagnostic math** (attrition calculations, concrete numbers) where the old version stays abstract
-- Current skill produces **cleaner skip behavior** — old version added unnecessary meta-commentary on trivial tasks
-- Current skill surfaces **problem topology** in the header so you can see how your problem was classified
-- Current skill costs ~11% more tokens but produces measurably sharper output
 
 ## Works Across Domains
 
