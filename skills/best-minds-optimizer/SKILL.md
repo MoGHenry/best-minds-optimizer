@@ -15,14 +15,16 @@ The core insight: LLMs are simulators. A prompt framed through Charlie Munger's 
 
 Before doing anything, classify the user's prompt into one of four lanes:
 
-**Skip** — The prompt is a mechanical task where expert framing adds no value:
-- File operations, git commands, simple edits ("read this file", "commit this", "rename X to Y")
+**Skip** — The prompt is a short, simple instruction where polishing adds no value:
+- Single-sentence commands with no user-authored detail ("read this file", "commit this", "rename X to Y")
 - Follow-up messages in an ongoing conversation where the prompt is already refined (see Follow-up Handling below)
+- **Only skip if the prompt is roughly one short sentence with no requirements, constraints, or context.** If the user wrote more than one sentence, route to **Polish** instead.
 - Emit `status: "skipped"` (or skip JSON entirely) and proceed with the original prompt unchanged.
 
-**Polish** — The prompt contains user-authored text that would benefit from a quick wording pass:
-- The task is mechanical but the *content* is prose the user composed (instructions, descriptions, config prose, skill definitions, prompts)
+**Polish** — The prompt is multi-sentence or contains user-authored text that would benefit from a quick wording pass:
+- Any prompt where the user composed multiple sentences, specified requirements, or provided context — regardless of whether the task is mechanical, creative, or analytical
 - The user explicitly asks to "polish", "clean up", "improve wording", or similar
+- **Rule of thumb: if the user wrote more than one short sentence, it's worth a polish.** The user invested effort in composing the prompt — a quick wording pass respects that effort.
 - Read `references/polish.md` for detailed instructions. Do NOT run the full optimization pipeline.
 
 **Clarify** — The prompt is substantive but could go in meaningfully different directions:
@@ -57,7 +59,7 @@ When the user follows up on an already-optimized answer (e.g., "tell me more abo
 | Mistake | Why it matters |
 |---------|---------------|
 | Optimizing trivial tasks | Adds friction where there's no value — users notice and get annoyed |
-| Skipping user-authored prose | When the user provides text they wrote, a quick polish pass adds real value even if the task is "mechanical" — use the Polish lane |
+| Skipping multi-sentence prompts | If the user wrote more than one short sentence, they invested effort in composing the prompt — always route to Polish at minimum, never Skip |
 | Assuming intent on ambiguous prompts | Ask 2–3 targeted clarifying questions first — don't guess at context that changes the answer |
 | Re-optimizing follow-ups | When the user asks "tell me more about point 3," go deeper in the same expert's framework — don't re-run the full pipeline |
 
