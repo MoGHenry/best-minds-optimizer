@@ -1,4 +1,10 @@
+<div align="center">
+
 # 4D Mind Analyst
+
+English | [中文](https://github.com/MoGHenry/superminds/blob/main/README-4d-mind-analyst-CN.md)
+
+</div>
 
 An agent skill that analyzes any problem, phenomenon, or topic from four independent perspectives simultaneously using parallel agents. Inspired by Edward de Bono's parallel thinking methodology.
 
