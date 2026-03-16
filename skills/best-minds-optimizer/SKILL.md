@@ -15,11 +15,11 @@ The core insight: LLMs are simulators. A prompt framed through Charlie Munger's 
 
 Before doing anything, classify the user's prompt into one of four lanes:
 
-**Skip** — The prompt is a short, simple instruction where polishing adds no value:
-- Single-sentence commands with no user-authored detail ("read this file", "commit this", "rename X to Y")
-- Follow-up messages in an ongoing conversation where the prompt is already refined (see Follow-up Handling below)
-- **Only skip if the prompt is roughly one short sentence with no requirements, constraints, or context.** If the user wrote more than one sentence, route to **Polish** instead.
-- Emit `status: "skipped"` (or skip JSON entirely) and proceed with the original prompt unchanged.
+**Optimize** — The prompt is substantive and clear enough that expert framing will sharpen it:
+- The question has a definite problem structure even if the user phrased it loosely
+- Clarification would just delay an obviously useful rewrite
+- The user explicitly says "just give me your take"
+- Read `references/optimize.md` for the full pipeline (Logic Mapping → Expert Selection → Prompt Rewrite → Output → Answer Format).
 
 **Polish** — The prompt is multi-sentence or contains user-authored text that would benefit from a quick wording pass:
 - Any prompt where the user composed multiple sentences, specified requirements, or provided context — regardless of whether the task is mechanical, creative, or analytical
@@ -32,13 +32,43 @@ Before doing anything, classify the user's prompt into one of four lanes:
 - The answer would change significantly depending on unstated context
 - Read `references/clarify.md` for detailed instructions. After gathering context, proceed to Optimize.
 
-**Optimize** — The prompt is substantive and clear enough that expert framing will sharpen it:
-- The question has a definite problem structure even if the user phrased it loosely
-- Clarification would just delay an obviously useful rewrite
-- The user explicitly says "just give me your take"
-- Read `references/optimize.md` for the full pipeline (Logic Mapping → Expert Selection → Prompt Rewrite → Output → Answer Format).
+**Skip** — The prompt is a short, simple instruction where polishing adds no value:
+- Single-sentence commands with no user-authored detail ("read this file", "commit this", "rename X to Y")
+- Follow-up messages in an ongoing conversation where the prompt is already refined (see Follow-up Handling below)
+- **Only skip if the prompt is roughly one short sentence with no requirements, constraints, or context.** If the user wrote more than one sentence, route to **Polish** instead.
+- Emit `status: "skipped"` (or skip JSON entirely) and proceed with the original prompt unchanged.
 
-### Follow-up Handling
+### Step 2: Confirmation — Review Gate
+
+After triage completes and the optimization pipeline runs (Steps 1.5–3), you **must** pause and present the Review Gate before executing. This is mandatory — never skip it.
+
+**Review Gate display format:**
+
+```
+### Review Gate
+
+**Expert Persona**: [Name] — [one-line rationale]
+**Reasoning Framework**: [Logic Structure type] — [framework applied, e.g., First Principles / Inversion]
+**Key Metrics**: [2–3 North Star metrics]
+
+**Rewritten Prompt**:
+> [The full optimized prompt from Step 3]
+
+---
+⏳ **Awaiting your authorization.** Reply with:
+- **"go"** or **"yes"** — execute as shown
+- **"adjust [feedback]"** — re-optimize with your feedback (e.g., "adjust — use a different expert" or "adjust — focus more on pricing")
+- **"skip"** — abandon optimization and answer the original prompt directly
+```
+
+**Rules:**
+- **Never execute the optimized prompt until the user explicitly authorizes.** Silence is not consent — wait for a response.
+- If the user says **"go"** / **"yes"** / **"proceed"** (or any clear affirmative), execute the optimized prompt per Steps 4–5 in `references/optimize.md`.
+- If the user provides **adjustment feedback**, return to Step 2 (Expert Selection) or Step 3 (Rewrite) as appropriate, then present the Review Gate again with the revised output.
+- If the user says **"skip"**, abandon the optimization and answer the original prompt directly without expert framing.
+- The **Direction-shift pause** in `references/optimize.md` Step 4 is now subsumed by this gate — the Review Gate already surfaces the reframe for user review, so no separate pause is needed.
+
+## Follow-up Handling
 
 When the user follows up on an already-optimized answer (e.g., "tell me more about point 3", "what about the pricing angle?", "can you elaborate?"):
 - **Do NOT re-optimize.** The expert and framework are already established.
@@ -62,5 +92,6 @@ When the user follows up on an already-optimized answer (e.g., "tell me more abo
 | Skipping multi-sentence prompts | If the user wrote more than one short sentence, they invested effort in composing the prompt — always route to Polish at minimum, never Skip |
 | Assuming intent on ambiguous prompts | Ask 2–3 targeted clarifying questions first — don't guess at context that changes the answer |
 | Re-optimizing follow-ups | When the user asks "tell me more about point 3," go deeper in the same expert's framework — don't re-run the full pipeline |
+| Executing before Review Gate authorization | Never execute the optimized prompt until the user explicitly says "go", "yes", or equivalent — silence is not consent |
 
 See `references/optimize.md` for the full common mistakes table specific to the optimization pipeline.
