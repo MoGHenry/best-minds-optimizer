@@ -8,6 +8,8 @@ English | [中文](https://github.com/MoGHenry/superminds/blob/main/README-featu
 
 Agents working on large projects across multiple context windows lose memory between sessions. They either try to do everything at once (over-ambition) or declare the project finished when it isn't (premature completion). Feature List Mind solves this by establishing a JSON feature list as the single source of truth, a session init protocol that recovers state, and an incremental commit discipline.
 
+**This is not a fully automated pipeline.** Feature List Mind is a human-AI collaborative protocol — the LLM implements and verifies, but only the human user holds the authority to mark features as complete. The LLM has READ-only access to `features.json` and must inform the user with actionable instructions before any status change.
+
 Based on patterns from Anthropic's research on [Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents).
 
 ## How It Works
@@ -19,7 +21,7 @@ The skill has two modes:
 **Resume Mode** — When returning to an existing project (or when `features.json` already exists), it runs a session init sequence: reads the feature list, checks git history, reports phase progress, selects the next highest-priority feature using critical-path awareness, and announces intent before starting.
 
 ```
-Session Start → Read features.json → Report Phase Progress → Pick Next Feature → Implement → Verify → Commit → Update Tracker → Commit Again
+Session Start → Read features.json → Report Phase Progress → Pick Next Feature → Implement → Verify (steps + test suite) → Commit → Inform User → Update Tracker (after authorization) → Commit Again
 ```
 
 ## Before / After
@@ -88,10 +90,41 @@ Features are organized into **phases** (delivery milestones) and tracked with bi
 - **One feature per session** — Complete and verify one feature before moving to the next
 - **Critical path first** — When choosing between equal-priority features, pick the one that unblocks the most downstream work
 - **INVEST readiness** — Every feature is checked for Independence, Negotiability, Value, Estimability, Smallness, and Testability before entering the list
+- **Verify with project test suite** — After feature verification steps pass, run the project's test suite to catch regressions before informing the user
+- **Inform before updating status** — After verification passes, present the user with actionable instructions for updating `features.json`; never silently flip status
 - **Verification steps are immutable** — Never edit tests to match broken code; fix the code
 - **Double-commit pattern** — One commit for code, one commit for tracking updates
 - **Trust the JSON, not memory** — Always re-read `features.json` before reporting progress
 - **Never delete features** — Mark them as passing, blocked, or superseded
+
+## Required CLAUDE.md Setup
+
+Feature List Mind requires a `CLAUDE.md` configuration in your project root to enforce the human-in-the-loop protocol. Add the following to your project's `CLAUDE.md`:
+
+```markdown
+## Project State Protocol
+
+### 1. Mandatory Initialization
+Before executing any planning, implementation, or debugging request, you MUST read
+features.json and PROGRESS.md to establish the current project state.
+
+### 2. Single Source of Truth
+features.json is the definitive record of features, phases, and dependencies.
+Do not rely on memory or implicit context. LLM only have the READ privilege
+to features.json, no EDIT privilege.
+
+### 3. Human-in-the-Loop Verification
+You are prohibited from marking any feature as passes or updating completion
+metrics independently. Only the human user holds the authority to verify a
+feature and authorize a status change.
+
+### 4. Dependency Enforcement
+Prior to starting work on any feature, you must verify in features.json that
+all of its listed depends_on features are marked as passes. If dependencies
+are incomplete, halt and notify the user.
+```
+
+Without this configuration, the LLM may attempt to update `features.json` directly. The CLAUDE.md protocol ensures every status transition requires explicit human authorization.
 
 ## Installation
 
@@ -118,6 +151,6 @@ skills/feature-list-mind/
     ├── init-protocol.md         — Phase planning, feature expansion, INVEST checks, user review gate
     ├── session-resume.md        — Session init sequence, phase-aware selection, critical path, state recovery
     ├── feature-schema.md        — JSON schema with phases, INVEST criteria, granularity guide, status transitions
-    ├── completion-protocol.md   — End-to-end verification, double-commit, session wrap-up
+    ├── completion-protocol.md   — End-to-end verification, project test suite, user notification gate, double-commit
     └── failure-guards.md        — Guards against premature completion, scope creep, test mutation
 ```

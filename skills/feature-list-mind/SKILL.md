@@ -22,7 +22,7 @@ description: >
 
 A session continuity protocol for long-running agent work. When a project spans multiple context windows, agents lose memory between sessions — leading to over-ambition (attempting everything at once), premature completion (declaring done too early), or repeated work. This skill solves that by establishing a JSON feature list as the single source of truth, a session init sequence that recovers state, and an incremental commit discipline that keeps progress auditable.
 
-The core loop: **Resume → Pick Feature → Implement → Verify → Commit → Update Tracker → Commit Again.**
+The core loop: **Resume → Pick Feature → Implement → Verify (steps + test suite) → Commit → Inform User → Update Tracker (after authorization) → Commit Again.**
 
 The core structure: **Phases → Features → Verification Steps.** Phases group features into delivery milestones (Foundation, MVP, Core, Polish). Features are individually completable units of work. Verification steps are the concrete test script for each feature.
 
@@ -62,10 +62,11 @@ Each session follows one cycle of the feature loop:
 1. Resume    — Run session init sequence (pwd, read features.json, git log, git status)
 2. Pick      — Select the highest-priority incomplete feature whose dependencies are met
 3. Implement — Write the code for that one feature
-4. Verify    — Run through every verification step end-to-end (not "the code looks right")
+4. Verify    — Run feature verification steps end-to-end, then run project test suite
 5. Commit    — Implementation commit: feat(F001): [description]
-6. Update    — Set feature status to passes in features.json, update PROGRESS.md
-7. Commit    — Progress commit: progress: F001 passing — [N]/[total] complete
+6. Inform    — Present the user with verification results and actionable instructions to update status
+7. Update    — After user authorization, set feature status to passes in features.json, update PROGRESS.md
+8. Commit    — Progress commit: progress: F001 passing — [N]/[total] complete
 ```
 
 Read `references/completion-protocol.md` for the full verification and commit protocol, including the double-commit pattern, session wrap-up, and handling verification failures.
@@ -96,6 +97,8 @@ Long-running agents fail in predictable ways. Read `references/failure-guards.md
 |---------|---------------|
 | Attempting too many features per session | Context degradation causes regressions — one feature at a time is the ceiling |
 | Marking features as passing without verification | The whole system depends on pass/fail being honest — an unverified "pass" cascades errors to downstream features |
+| Updating features.json without informing the user | The user must see verification results and receive actionable instructions before status changes — silent updates bypass the review gate |
+| Skipping the project test suite | Feature steps passing is not enough — run the project's test suite to catch regressions before informing the user the feature is complete |
 | Editing verification steps to make them pass | Steps define the contract — changing the test instead of the code is the most dangerous failure mode |
 | Skipping the session init sequence | Without reading progress first, you will redo work or break working features |
 | Committing only at session end | Commit after each feature — a crash mid-session should lose at most one feature's worth of work |

@@ -13,6 +13,20 @@ After implementing a feature, run through every verification step in its `steps`
 
 **Do not mark a feature as passing based on "the code looks right."** Run the steps. If a step cannot be verified automatically, note the limitation but still attempt manual verification.
 
+### Run Project Test Cases
+
+After the feature's own verification steps pass, run the project's test suite to confirm no regressions were introduced. This step is **mandatory before informing the user** that the feature is ready to be marked as complete.
+
+1. **Identify the project's test command** — Look for `test` scripts in `package.json`, `Makefile`, `pyproject.toml`, or similar. Common commands: `npm test`, `pytest`, `go test ./...`, `cargo test`, `make test`.
+2. **Run the full test suite** (or the relevant subset if the suite is large and the project has conventions for scoped testing).
+3. **All tests must pass.** If any test fails:
+   - Determine whether the failure is related to the current feature or a pre-existing issue.
+   - If related: fix the implementation and re-run both the feature's verification steps and the test suite.
+   - If pre-existing: note it in the feature's `notes` field and in `PROGRESS.md` under Known Issues, but do not let it block marking the current feature — only if the pre-existing failure is clearly unrelated.
+4. **If no test suite exists** — Note this in the feature's `notes` field. The feature's own `steps` array verification is sufficient, but flag the absence of a project-level test suite as a risk.
+
+**Never inform the user that a feature is ready to mark as complete until both the feature's verification steps AND the project test suite pass.**
+
 ### Known Limitation
 
 Some verification steps may involve browser-native elements (alert modals, file dialogs, print views) that browser automation tools cannot interact with. When this happens:
@@ -21,6 +35,34 @@ Some verification steps may involve browser-native elements (alert modals, file 
 - Verify everything that can be verified automatically
 - Describe what manual verification would look like for the remaining steps
 - Mark the feature as `passes` only if all automatable steps pass and the remaining steps are clearly correct from code inspection
+
+## Informing the User to Update Feature Status
+
+After verification passes (both feature steps and project test suite), **do not silently update features.json**. Instead, inform the user with explicit, actionable instructions so they can review and authorize the status change. Present the following:
+
+```
+### Feature Verified: [Feature ID] — [description]
+
+All verification steps passed. Project test suite passed. This feature is ready to be marked as complete.
+
+**To update `features.json`:**
+
+1. Open `features.json` in your project root.
+2. Find the feature with `"id": "[Feature ID]"`.
+3. Change `"status": "in_progress"` → `"status": "passes"`.
+4. Set `"session_completed"` to the current session number (check `"session_count"` in the file).
+5. Add any relevant notes to the `"notes"` field (optional).
+6. Update the `"summary"` object:
+   - Increment `"passing"` by 1
+   - Decrement `"in_progress"` by 1
+   - Recalculate `"completion_percentage"`: (passing / total) × 100
+   - Update the relevant phase count in `"by_phase"`
+7. If all features in the current phase now have `"status": "passes"`, set that phase's `"status"` to `"complete"` and advance `"current_phase"` to the next phase.
+
+**Ready to proceed?** Reply "update" and I'll make the changes, or update the file yourself.
+```
+
+This gate ensures the user is aware of what passed, what will change, and has the option to make the update themselves or delegate it back to the agent. The agent should **never** silently flip a feature to `passes` without this notification step.
 
 ## The Double-Commit Pattern
 

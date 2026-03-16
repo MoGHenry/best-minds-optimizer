@@ -43,7 +43,7 @@ Start a new session and ask a substantive question (e.g., "How should I price my
 - **[4d-mind-analyst](README-4d-mind-analyst.md)** — Multi-perspective analysis engine that dispatches four parallel agents — User-Centric, Product, Topic Selection, and Curriculum thinking — then synthesizes their independent analyses into a unified tiered output.
 
 **Agent Workflow**
-- **[feature-list-mind](README-feature-list-mind.md)** — Session continuity protocol for long-running agent work. Manages a JSON feature list, session init sequence, incremental commit discipline, and failure guards to keep agents productive across multiple context windows. Based on Anthropic's [Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents).
+- **[feature-list-mind](README-feature-list-mind.md)** — Human-AI collaborative session continuity protocol for long-running agent work. **This is not a fully automated pipeline** — it requires human oversight at every verification gate. The LLM implements and verifies, but only the human user holds the authority to mark features as complete. Manages a JSON feature list, session init sequence, incremental commit discipline, project test suite verification, and user notification gates. Based on Anthropic's [Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents).
 
 ## How It Works
 
@@ -71,6 +71,47 @@ Input → Perspective Menu → Parallel Agents → Synthesis → Tiered Output
 ```
 
 Four independent agents analyze simultaneously, then a synthesis agent merges their insights — surfacing convergences, tensions, and blind spots that no single perspective could find alone.
+
+**Feature List Mind** | [skills.sh/superminds/feature-list-mind](https://skills.sh/moghenry/superminds/feature-list-mind)
+
+manages long-running agent work with human-in-the-loop verification:
+
+```
+Resume → Pick Feature → Implement → Verify (steps + test suite) → Commit → Inform User → Update (after authorization) → Commit Again
+```
+
+- **Human-AI collaborative** — The LLM implements and runs verification, but only the human user can authorize marking a feature as complete
+- **LLM has READ-only access to `features.json`** — The agent reads the tracker for state but never edits status fields independently
+- **Verification before notification** — Both feature-specific steps and the project test suite must pass before the user is informed
+
+#### Required CLAUDE.md Setup
+
+Feature List Mind requires a `CLAUDE.md` configuration in your project root to enforce the human-in-the-loop protocol. Add the following to your project's `CLAUDE.md`:
+
+```markdown
+## Project State Protocol
+
+### 1. Mandatory Initialization
+Before executing any planning, implementation, or debugging request, you MUST read
+features.json and PROGRESS.md to establish the current project state.
+
+### 2. Single Source of Truth
+features.json is the definitive record of features, phases, and dependencies.
+Do not rely on memory or implicit context. LLM only have the READ privilege
+to features.json, no EDIT privilege.
+
+### 3. Human-in-the-Loop Verification
+You are prohibited from marking any feature as passes or updating completion
+metrics independently. Only the human user holds the authority to verify a
+feature and authorize a status change.
+
+### 4. Dependency Enforcement
+Prior to starting work on any feature, you must verify in features.json that
+all of its listed depends_on features are marked as passes. If dependencies
+are incomplete, halt and notify the user.
+```
+
+This configuration ensures the LLM cannot silently advance the project state. Every status transition requires explicit human authorization.
 
 ### How They Work Together
 

@@ -8,6 +8,8 @@
 
 在大型项目中跨多个上下文窗口工作的 Agent 会在会话之间丢失记忆。它们要么试图一次性完成所有事情（过度雄心），要么在项目尚未完成时就宣布完成（过早结束）。Feature List Mind 通过建立 JSON 功能列表作为唯一的事实来源、会话初始化协议来恢复状态，以及增量提交纪律来解决这个问题。
 
+**这不是一个完全自动化的流程。** Feature List Mind 是一个人机协同（Human-AI Collaborative）协议——LLM 负责实现和验证，但只有人类用户才有权将功能标记为完成。LLM 对 `features.json` 仅有读取权限，在任何状态变更前必须向用户提供可操作的指令。
+
 基于 Anthropic 关于[长时间运行 Agent 的有效约束](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)的研究中的模式。
 
 ## 工作原理
@@ -19,7 +21,7 @@
 **恢复模式** — 返回现有项目时（或 `features.json` 已存在时），它会运行会话初始化序列：读取功能列表、检查 git 历史、报告阶段进度、使用关键路径感知选择下一个最高优先级的功能，并在开始之前宣布意图。
 
 ```
-会话启动 → 读取 features.json → 报告阶段进度 → 选择下一个功能 → 实现 → 验证 → 提交 → 更新跟踪器 → 再次提交
+会话启动 → 读取 features.json → 报告阶段进度 → 选择下一个功能 → 实现 → 验证（步骤 + 测试套件）→ 提交 → 通知用户 → 更新跟踪器（用户授权后）→ 再次提交
 ```
 
 ## 使用前后对比
@@ -88,10 +90,41 @@
 - **每次会话一个功能** — 完成并验证一个功能后再进入下一个
 - **关键路径优先** — 在优先级相同的功能之间选择时，选择能解锁最多下游工作的那个
 - **INVEST 就绪性** — 每个功能在进入列表前都需检查独立性（Independence）、可协商性（Negotiability）、价值（Value）、可估算性（Estimability）、小巧性（Smallness）和可测试性（Testability）
+- **运行项目测试套件验证** — 功能验证步骤通过后，运行项目的测试套件以捕获回归问题，然后再通知用户
+- **更新状态前先通知用户** — 验证通过后，向用户提供更新 `features.json` 的可操作指令；不要静默修改状态
 - **验证步骤不可变** — 永远不要修改测试来适配有问题的代码；修复代码本身
 - **双重提交模式** — 一次提交代码，一次提交跟踪更新
 - **信任 JSON，不信记忆** — 在报告进度前始终重新读取 `features.json`
 - **永远不删除功能** — 将它们标记为通过、阻塞或已替代
+
+## 必要的 CLAUDE.md 配置
+
+Feature List Mind 需要在项目根目录的 `CLAUDE.md` 中添加配置，以强制执行人机协同协议。将以下内容添加到你项目的 `CLAUDE.md` 中：
+
+```markdown
+## Project State Protocol
+
+### 1. Mandatory Initialization
+Before executing any planning, implementation, or debugging request, you MUST read
+features.json and PROGRESS.md to establish the current project state.
+
+### 2. Single Source of Truth
+features.json is the definitive record of features, phases, and dependencies.
+Do not rely on memory or implicit context. LLM only have the READ privilege
+to features.json, no EDIT privilege.
+
+### 3. Human-in-the-Loop Verification
+You are prohibited from marking any feature as passes or updating completion
+metrics independently. Only the human user holds the authority to verify a
+feature and authorize a status change.
+
+### 4. Dependency Enforcement
+Prior to starting work on any feature, you must verify in features.json that
+all of its listed depends_on features are marked as passes. If dependencies
+are incomplete, halt and notify the user.
+```
+
+如果没有此配置，LLM 可能会直接修改 `features.json`。CLAUDE.md 协议确保每次状态转换都需要明确的人类授权。
 
 ## 安装
 
@@ -118,6 +151,6 @@ skills/feature-list-mind/
     ├── init-protocol.md         — 阶段规划、功能扩展、INVEST 检查、用户审查关卡
     ├── session-resume.md        — 会话初始化序列、阶段感知选择、关键路径、状态恢复
     ├── feature-schema.md        — JSON 模式定义、阶段、INVEST 标准、粒度指南、状态转换
-    ├── completion-protocol.md   — 端到端验证、双重提交、会话收尾
+    ├── completion-protocol.md   — 端到端验证、项目测试套件、用户通知关卡、双重提交
     └── failure-guards.md        — 防止过早完成、范围蔓延、测试篡改的保护机制
 ```
