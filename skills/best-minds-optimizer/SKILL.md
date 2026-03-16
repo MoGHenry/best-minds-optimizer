@@ -81,6 +81,7 @@ When the user follows up on an already-optimized answer (e.g., "tell me more abo
 | File | When to read | What it contains |
 |------|-------------|-----------------|
 | `references/optimize.md` | Triage → Optimize | Steps 1.5–5: Logic Mapping, Expert Selection, Prompt Rewrite, Output Format, Answer Format + examples + common mistakes |
+| `references/methodology.md` | Step 3 of Optimize, Polish lane | 4-D prompt optimization methodology: Deconstruct → Diagnose → Develop → Deliver |
 | `references/polish.md` | Triage → Polish | Polish instructions + example |
 | `references/clarify.md` | Triage → Clarify | Clarify instructions + example, then routes to optimize.md |
 

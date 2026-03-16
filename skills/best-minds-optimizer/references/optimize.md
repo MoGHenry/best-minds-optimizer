@@ -41,7 +41,16 @@ Both are used internally to sharpen the optimized prompt and are surfaced in the
 
 ## Step 3: Rewrite the Prompt
 
-Transform the user's raw input into an optimized prompt by applying the expert's:
+### Structured Rewrite Process (4-D Methodology)
+
+Follow the 4-D methodology in `references/methodology.md`:
+
+1. **Deconstruct** — extract intent, entities, constraints, and gaps
+2. **Diagnose** — audit clarity, specificity, and complexity
+3. **Develop** — select techniques by request type (Creative/Technical/Educational/Complex), assign role, enhance context
+4. **Deliver** — construct the optimized prompt, format by complexity
+
+Then layer the expert's specific frameworks on top:
 
 - **Frameworks**: Their actual mental models and analytical tools
 - **Vocabulary**: Domain-precise terminology that unlocks better reasoning

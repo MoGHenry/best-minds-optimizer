@@ -25,7 +25,7 @@ Input → Triage (Skip | Polish | Clarify | Optimize) → Expert-Framed Answer
 - **Skip** — Mechanical tasks pass through untouched. No friction.
 - **Polish** — User-authored text gets a quick wording pass. Voice preserved.
 - **Clarify** — Ambiguous questions get targeted multiple-choice questions first.
-- **Optimize** — Substantive questions get the full pipeline: Logic Mapping → Expert Selection → Prompt Rewrite → Plain-English Answer.
+- **Optimize** — Substantive questions get the full pipeline: Logic Mapping → Expert Selection → 4-D Methodology (Deconstruct → Diagnose → Develop → Deliver) → Plain-English Answer.
 
 **4D Mind Analyst**  | [skills.sh/superminds/4d-mind-analyst](https://skills.sh/moghenry/superminds/4d-mind-analyst)
 
@@ -65,7 +65,7 @@ Start a new session and ask a substantive question (e.g., "How should I price my
 ### Skills Library
 
 **Thinking Enhancement**
-- **[best-minds-optimizer](README-best-minds-optimizer.md)** — Prompt optimizer that identifies the world's top domain expert for your question, rewrites your prompt through their frameworks, and delivers a plain-English answer with a concrete next step. Handles four lanes: Skip, Polish, Clarify, and Optimize.
+- **[best-minds-optimizer](README-best-minds-optimizer.md)** — Prompt optimizer that identifies the world's top domain expert for your question, rewrites your prompt through their frameworks using a structured 4-D Methodology (Deconstruct → Diagnose → Develop → Deliver), and delivers a plain-English answer with a concrete next step. Handles four lanes: Skip, Polish, Clarify, and Optimize.
 - **[4d-mind-analyst](README-4d-mind-analyst.md)** — Multi-perspective analysis engine that dispatches four parallel agents — User-Centric, Product, Topic Selection, and Curriculum thinking — then synthesizes their independent analyses into a unified tiered output.
 
 ### How They Work Together

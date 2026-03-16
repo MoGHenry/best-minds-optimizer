@@ -69,7 +69,7 @@ The **Optimize** pipeline runs 4 steps:
 | :--- | :---------------------------------------------------------------------------------- |
 | 1    | **Logic Mapping** — classify problem shape: Bottleneck · Resource · Direction · Execution · Tradeoff · Diagnosis |
 | 2    | **Expert Selection** — pick a named individual, extract mental models and KPIs      |
-| 3    | **Prompt Rewrite** — apply expert's frameworks, vocabulary, and blind spot coverage  |
+| 3    | **Prompt Rewrite via 4-D Methodology** — **Deconstruct** (extract intent, entities, gaps) → **Diagnose** (audit clarity, specificity, complexity) → **Develop** (select techniques by request type — Creative / Technical / Educational / Complex) → **Deliver** (construct optimized prompt), then layer the expert's frameworks on top |
 | 4    | **Plain-English Answer** — 3–5 key points + concrete next step                      |
 
 **Follow-ups skip the pipeline.** Asking "tell me more about point 3" goes deeper in the same expert's framework without re-running everything.
@@ -82,19 +82,23 @@ The skill uses progressive disclosure to keep context lean. Only the triage logi
 
 ```
 best-minds-optimizer/
-├── SKILL.md              ← Entry point: triage + routing (64 lines)
+├── SKILL.md              ← Entry point: triage + routing
 └── references/
     ├── optimize.md       ← Full pipeline: Logic Mapping → Expert
-    │                       Selection → Rewrite → Output (225 lines)
+    │                       Selection → Rewrite → Output
+    ├── methodology.md    ← 4-D Methodology: Deconstruct → Diagnose
+    │                       → Develop → Deliver
     ├── clarify.md        ← Clarification flow, then routes to
-    │                       optimize.md (44 lines)
+    │                       optimize.md
     └── polish.md         ← Quick wording pass for user-authored
-                            text (35 lines)
+                            text (applies Phases 1–2 of 4-D)
 ```
 
-A **Skip** loads 64 lines. A **Polish** loads 99. Only a full **Optimize** loads the heavy reference.
+A **Skip** loads only the triage logic. A **Polish** loads the polish reference plus Phases 1–2 of the 4-D methodology. A full **Optimize** loads the complete pipeline including all four phases.
 
 ## What Makes This Different
+
+**4-D Methodology** — Every prompt rewrite follows a structured four-phase process: **Deconstruct** (extract intent, entities, and gaps), **Diagnose** (audit clarity and complexity), **Develop** (select techniques matched to request type — Creative, Technical, Educational, or Complex), and **Deliver** (construct the final optimized prompt). This ensures consistent, high-quality output regardless of topic. Polish-lane prompts get Phases 1–2 (Deconstruct + Diagnose) to catch gaps before the wording pass.
 
 **Logic Mapping** — Before picking an expert, the skill classifies your problem's structural shape. A pricing question might look like a "Resource" problem (how to allocate a scarce thing) but actually be a "Direction" problem (which path to take). The classification determines which reasoning framework applies:
 

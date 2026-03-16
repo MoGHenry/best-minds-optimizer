@@ -10,6 +10,15 @@ The user has provided text they authored — instructions, descriptions, config 
 - The user explicitly asks to "polish", "clean up", "improve wording", or similar
 - The user presents their own draft and asks for feedback or refinement
 
+## Pre-Polish Analysis (4-D Phases 1–2)
+
+Before editing, apply the first two phases of the 4-D methodology (`references/methodology.md`):
+
+1. **Deconstruct** — Extract the user's core intent, key entities, and what context is provided vs. missing.
+2. **Diagnose** — Check for clarity gaps, ambiguity, redundancy, and missing specificity.
+
+Use what you find to inform the polish edits below. Skip Phases 3–4 (Develop/Deliver) — those are optimize-only.
+
 ## How to Polish
 
 Apply these edits while preserving the user's intent and voice:
